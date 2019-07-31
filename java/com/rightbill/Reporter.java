@@ -16,9 +16,9 @@ import java.io.IOException;
 
 public class Reporter {
 
-    File bill;
-    FileWriter writer;
-    String day, mounth;
+    private File bill;
+    private FileWriter writer;
+    private String day, month;
 
     /**
      * Constructor
@@ -35,7 +35,7 @@ public class Reporter {
             e.printStackTrace();
         }
         this.day = day;
-        this.mounth = mounth;
+        this.month = mounth;
     }
 
     /**
@@ -45,13 +45,12 @@ public class Reporter {
      * @param category
      */
     protected void writeAmount(double amount, CategoryTransaction category){
-        System.out.println("writeAmount called");
-        String toAppend = day + "/" + mounth + ";" + Double.toString(amount) + ";" + category.name() + "\n";
+        String toAppend = day + "/" + month + ";" + Double.toString(amount) + ";" + category.name() + "\n";
         try {
             // Appends the transaction
             writer.write(toAppend);
+            writer.flush();
         } catch (IOException e) {
-            System.err.println("Exception occured in writing the amount to bill file");
             e.printStackTrace();
         }
     }
@@ -62,6 +61,7 @@ public class Reporter {
     protected void close(){
         try {
             writer.close();
+            writer = null;
         } catch (IOException e) {
             System.err.println("Exception occured in closing the writer of Reporter");
         }

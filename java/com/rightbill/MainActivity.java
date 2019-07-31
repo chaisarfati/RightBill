@@ -89,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
         // Report everything to the bill
         reporter.writeAmount(this.amount, this.category);
         System.out.println("Sent : " + amount + ";" + category);
+        reporter.close();
         // Clear the edit text
         inputAmount.getText().clear();
     }
