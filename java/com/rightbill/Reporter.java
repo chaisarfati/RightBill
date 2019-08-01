@@ -24,18 +24,18 @@ public class Reporter {
      * Constructor
      * @param bill
      */
-    public Reporter(File bill, String day, String mounth) {
+    public Reporter(File bill, String day, String month) {
         this.bill = bill;
-        this.bill.setWritable(true);
+
         try {
             // FileWriter in append mode
             this.writer = new FileWriter(this.bill, true);
         } catch (IOException e) {
-            System.err.println("Exception occured in Reporter constructor when open " + this.bill.getAbsolutePath());
             e.printStackTrace();
         }
+
         this.day = day;
-        this.month = mounth;
+        this.month = month;
     }
 
     /**
@@ -47,7 +47,7 @@ public class Reporter {
     protected void writeAmount(double amount, CategoryTransaction category){
         String toAppend = day + "/" + month + ";" + Double.toString(amount) + ";" + category.name() + "\n";
         try {
-            // Appends the transaction
+            // Appends the transaction to the bill file
             writer.write(toAppend);
             writer.flush();
         } catch (IOException e) {
@@ -61,9 +61,8 @@ public class Reporter {
     protected void close(){
         try {
             writer.close();
-            writer = null;
         } catch (IOException e) {
-            System.err.println("Exception occured in closing the writer of Reporter");
+            e.printStackTrace();
         }
     }
 }

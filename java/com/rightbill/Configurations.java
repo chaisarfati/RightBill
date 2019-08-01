@@ -3,7 +3,6 @@ package com.rightbill;
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -14,11 +13,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.TimeZone;
-
 
 /**
  * This objects stores the configurations
@@ -37,40 +34,37 @@ public class Configurations implements Parcelable {
     protected final String CURR_BILL;
     protected final String PREV_BILLS;
 
-    Context context;
-    File currentBill, config;
-    String date;
-    int debitDate;
+    private Context context;
+    private File currentBill, config;
+    private String date;
+    private int debitDate;
+
+    public File getCurrentBill() {
+        return currentBill;
+    }
 
     public Configurations(Context context) {
         this.context = context;
-        HOME = context.getDir("settings", Context.MODE_PRIVATE).getAbsolutePath() + "/";
+
+        // Initializes constant names of various files used for configuration
+        HOME = this.context.getDir("settings", Context.MODE_PRIVATE).getAbsolutePath() + "/";
         CONFIG = HOME + "config";
         CURR_BILL = HOME + "curr_bill/";
         PREV_BILLS = HOME + "prev_bills/";
 
-        Log.e("msg", "home = " + HOME);
-        Log.e("msg", "CONFIG = " + CONFIG);
-        Log.e("msg", "CURR_BILL = " + CURR_BILL);
-        Log.e("msg", "PREV_BILLS = " + PREV_BILLS);
-
         date = getDate();
-        System.out.println("STRING date: " + date);
 
+        // Open (or create) the 'config' file
         openConfiguration();
-        System.out.println(config.getAbsolutePath());
-
+        // Open (or create) the prev_bills directory
         openPrevBills();
 
+        /*
+         Open (or create) the current_bill directory and get the current bill file
+         representing the bank statement for the up-coming month
+         (e.g 08-2018 for the bank statement of august 2018)
+          */
         currentBill = openCurrentBill();
-        Log.e("msg", "currentBill = " + currentBill.getAbsolutePath());
-
-        System.out.println("INT debit_date: " + debitDate);
-        System.out.println("currentBill : " + currentBill.getName());
-
-        if(config != null){
-            System.out.println("Reussi, pas null");
-        }
     }
 
     protected Configurations(Parcel in) {
@@ -94,6 +88,11 @@ public class Configurations implements Parcelable {
         }
     };
 
+    /**
+     * Get today's date in yyyy-MM-dd format
+     * in a String representation
+     * @return
+     */
     private String getDate(){
         // Get current date
         Date date = new Date(System.currentTimeMillis());
@@ -101,7 +100,6 @@ public class Configurations implements Parcelable {
         // Convert to ISO 8601 format
         SimpleDateFormat sdf;
         sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-        sdf.setTimeZone(TimeZone.getTimeZone("CET"));
 
         // Return the date in 'yyyy-mm-dd' format
         return sdf.format(date).split("T")[0];
@@ -111,6 +109,9 @@ public class Configurations implements Parcelable {
      * Opens the config file (create it if not
      * existent already) and initializes the
      * 'config' field
+     * The config file stores only a number between
+     * 1 and 30 representing the debit date of the
+     * user
      */
     private void openConfiguration(){
         config = new File(CONFIG);
@@ -118,10 +119,13 @@ public class Configurations implements Parcelable {
             if (config.createNewFile()) { // Config file does not exist, create it
                 config.setWritable(true);
                 FileWriter fileWriter = new FileWriter(config);
+
+                // By default the debit date is on the 2nd of the month
                 fileWriter.write("2\n");
                 debitDate = 2;
+
                 fileWriter.close();
-            } else { // Config file already exist
+            } else { // Config file already exists
                 // Read the debit date it contains
                 BufferedReader reader = new BufferedReader(new FileReader(config));
                 // Initialize the 'debitDate' field with the read data
@@ -130,17 +134,16 @@ public class Configurations implements Parcelable {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("Problem occured openConfiguration");
         }
 
     }
 
     /**
      * Open the current_bill directory (or creates it if
-     * doesn't exist already), and returns the current bill
+     * doesn't exist already), and returns the current bill file
      * inside this directory (if no bill was present then create
-     * one and if outdated bill was present then move it to the
-     * prev_bills directory)
+     * one and if an outdated bill was present then move it to
+     * the prev_bills directory)
      * @return
      */
     private File openCurrentBill(){
@@ -149,8 +152,7 @@ public class Configurations implements Parcelable {
 
         // The currBill directory containing the current bill file
         File currBillDirectory = new File(CURR_BILL);
-
-        // If not already exists create the directory
+        // If not already existing create this directory
         if(currBillDirectory.mkdir()){
             // Create a new bill file inside it
             outBill = createBill();
@@ -159,12 +161,10 @@ public class Configurations implements Parcelable {
 
         /* The directory already existed but has no bill
         file inside */
-
         if (currBillDirectory.list() == null) {
             outBill = createBill();
             return outBill;
         }
-
 
         /*
         The directory already exists and there is a
@@ -174,50 +174,49 @@ public class Configurations implements Parcelable {
         use it (if it is still up to date)
         */
 
-        // Retrieve this file
-        String currBillName = currBillDirectory.list()[0];
-
-        File currBillFile = new File(CURR_BILL + currBillName);
+        // Retrieve the name of the file and a File object of it
+        String presentBillName = currBillDirectory.list()[0];
+        File presentBill = new File(CURR_BILL + presentBillName);
 
         // Retrieve the date period of this bill
-        String[] currDateSplit = currBillName.split("-");
+        String[] currDateSplit = presentBillName.split("-");
         int currMonth = Integer.parseInt(currDateSplit[0]),
                 currYear = Integer.parseInt(currDateSplit[1]);
 
         // Retrieve today's date
-        String[] ourDateSplit = date.split("-");
-        String ourDate = ourDateSplit[1] + "-" + ourDateSplit[0]; // MM-yyyy
-        int ourMonth = Integer.parseInt(ourDateSplit[1]),
-                ourYear = Integer.parseInt(ourDateSplit[0]),
-                ourDay = Integer.parseInt(ourDateSplit[2]);
+        String[] todayDateSplit = date.split("-");
+        String ourDate = todayDateSplit[1] + "-" + todayDateSplit[0]; // MM-yyyy
+        int  ourYear = Integer.parseInt(todayDateSplit[0]),
+                ourMonth = Integer.parseInt(todayDateSplit[1]),
+                ourDay = Integer.parseInt(todayDateSplit[2]);
 
         /* The current bill is the one for this month
         and we are still before the debit date */
-        if(currBillName.equals(ourDate) && ourDay < debitDate){
+        if(presentBillName.equals(ourDate) && ourDay < debitDate){
             // Bill Up to date --> Our operations must be appended to this bill
-            outBill = currBillFile;
+            outBill = presentBill;
         }
         /* The current bill has this month's date but we have already
-        passed the debit date of the month*/
-        else if (currBillName.equals(ourDate) && ourDay >= debitDate){
+        passed the debit date of the month */
+        else if (presentBillName.equals(ourDate) && ourDay >= debitDate){
             // Bill not up to date --> To be archived and we
             // must create new bill for the upcoming month
-            moveFileToDir(currBillFile.getName(), CURR_BILL, PREV_BILLS);
+            moveFileToDir(presentBill.getName(), CURR_BILL, PREV_BILLS);
             outBill = createBill();
         }
-        /* The bill represents the expenses of the upcoming month
-        */
+        /* The bill represents the expenses of the upcoming month */
         else if( (ourMonth + 1 == currMonth && ourYear == currYear)
                 || (ourMonth == 12 && currMonth == 1 && ourYear == currYear - 1)){
             // Bill Up to date --> Our operations must be appended to this bill
-            outBill = currBillFile;
+            outBill = presentBill;
         }
         // This bill is not up to date
         else{
             // Archive it to prev_bills and create a new one
-            moveFileToDir(currBillFile.getName(), CURR_BILL, PREV_BILLS);
+            moveFileToDir(presentBill.getName(), CURR_BILL, PREV_BILLS);
             outBill = createBill();
         }
+
         return outBill;
     }
 
@@ -233,9 +232,8 @@ public class Configurations implements Parcelable {
         OutputStream outStream;
 
         try{
-            // Retrieve the file at pathFrom, ? MAYBE add context.getFiledDir() si ca marche pas comme ca?
+            // Retrieve the file at pathFrom,
             File file = new File(pathFrom + fileName);
-
             // Creates a virgin copy of file
             File copy = new File(pathDest + fileName);
 
@@ -259,7 +257,6 @@ public class Configurations implements Parcelable {
                 System.out.println("File " + file.getName() + " was copied successfully!");
 
             return true;
-
         }catch(IOException e){
             System.err.println("Failed to move " + fileName + " to " + pathDest);
             return false;
