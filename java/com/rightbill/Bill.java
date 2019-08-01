@@ -18,8 +18,13 @@ public class Bill {
     public Bill(String path) {
         this.file = new File(path);
         this.transactions = new ArrayList<>(50);
+        initTransactions();
     }
 
+    /**
+     * Initializes the transactions list of this
+     * bill with the ones present in the bill file
+     */
     public void initTransactions() {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -34,20 +39,6 @@ public class Bill {
         }
     }
 
-    public Object[] toArray(){
-        return transactions.toArray();
-    }
-
-    public String[] toStringArray(){
-        int len = transactions.size();
-        String[] out = new String[len];
-
-        for (int i = 0; i < len; i++) {
-            out[i] = transactions.get(i).toString();
-        }
-        return out;
-    }
-
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder();
@@ -57,14 +48,19 @@ public class Bill {
         return str.toString();
     }
 
+    /*
+    Getters
+     */
     public File getFile() {
         return file;
     }
-
     public ArrayList<Transaction> getTransactions() {
         return transactions;
     }
 
+    /**
+     * Inner class representing a single transaction
+     */
     class Transaction {
         private String date, amount, category;
 
@@ -99,4 +95,5 @@ public class Bill {
         }
 
     }
+
 }
