@@ -31,11 +31,10 @@ public class Bill {
             String line = reader.readLine();
             while (line != null) {
                 transactions.add(new Transaction(line));
-                System.out.println("line : " + line);
                 line = reader.readLine();
             }
         }catch (IOException e){
-            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 

@@ -19,10 +19,10 @@ import android.widget.Toast;
 
 public class SettingsActivity extends Activity {
 
-    Configurations configurations;
-    EditText debitDate;
-    Button myBills;
-    int newDebitDate;
+    private Configurations configurations;
+    private EditText debitDate;
+    private Button myBills;
+    private int newDebitDate;
 
 
     @Override
@@ -31,10 +31,10 @@ public class SettingsActivity extends Activity {
         setContentView(R.layout.activity_settings);
 
         configurations = getIntent().getParcelableExtra("config");
-        System.out.println("eh bien : " + configurations.config);
+        System.out.println("eh bien : " + configurations.getConfig());
 
         debitDate = (EditText) findViewById(R.id.editText5);
-        debitDate.setHint(Integer.toString(configurations.debitDate));
+        debitDate.setHint(Integer.toString(configurations.getDebitDate()));
         debitDate.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
@@ -57,7 +57,7 @@ public class SettingsActivity extends Activity {
                         builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 configurations.setDebitDate(SettingsActivity.this.newDebitDate);
-                                debitDate.setHint(Integer.toString(configurations.debitDate));
+                                debitDate.setHint(Integer.toString(configurations.getDebitDate()));
                                 dialog.dismiss();
                             }
                         });
@@ -72,7 +72,7 @@ public class SettingsActivity extends Activity {
                         AlertDialog alert = builder.create();
                         alert.show();
 
-                        Log.i("lol", configurations.debitDate + "");
+                        Log.i("lol", configurations.getDebitDate() + "");
                         return true;
                     }
                 }

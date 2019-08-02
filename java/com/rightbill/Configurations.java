@@ -284,6 +284,11 @@ public class Configurations implements Parcelable {
      */
     private void openPrevBills(){
         new File(PREV_BILLS).mkdir();
+        /*try {
+            new File(PREV_BILLS + "lol").createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
     }
 
     /**
@@ -351,13 +356,17 @@ public class Configurations implements Parcelable {
         }
     }
 
+    /*
+    Getters
+     */
     public String getTodayDay(){
         return date.split("-")[2];
     }
-
     public String getTodayMonth(){
         return date.split("-")[1];
     }
+    public File getConfig() { return config; }
+    public int getDebitDate() { return debitDate; }
 
     @Override
     public int describeContents() {
@@ -373,4 +382,6 @@ public class Configurations implements Parcelable {
         dest.writeString(date);
         dest.writeInt(debitDate);
     }
+
+
 }

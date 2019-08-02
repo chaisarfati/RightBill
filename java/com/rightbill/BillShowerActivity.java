@@ -21,10 +21,8 @@ public class BillShowerActivity extends AppCompatActivity {
         String fName = getIntent().getStringExtra("date");
 
         Bill bill = new Bill(fName);
-        bill.initTransactions();
 
         TransactionListAdapter adapter = new TransactionListAdapter(this, R.layout.row_transaction, bill.getTransactions());
-        //ArrayAdapter<String> adapterCurr = new ArrayAdapter<>(BillShowerActivity.this, R.layout.row_bill, R.id.text_bill, bill.toStringArray());
         billList.setAdapter(adapter);
     }
 }

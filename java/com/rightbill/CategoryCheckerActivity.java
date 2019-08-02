@@ -40,7 +40,7 @@ public class CategoryCheckerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category_checker);
 
-        // Set width and height of this popup activity
+        // Set width and height of the popup activity
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
         int width = dm.widthPixels;
@@ -49,7 +49,6 @@ public class CategoryCheckerActivity extends AppCompatActivity {
 
         listCategories = (ListView) findViewById(R.id.categories);
         CategoryListAdapter adapter = new CategoryListAdapter(this, titles, images);
-        // ArrayAdapter<String> adapter = new ArrayAdapter<>(CategoryCheckerActivity.this, R.layout.row_category, R.id.category_text, titles);
         listCategories.setAdapter(adapter);
 
         listCategories.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -62,6 +61,11 @@ public class CategoryCheckerActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Sends back the CategoryTransaction in argument
+     * to the parent calling activity
+     * @param c
+     */
     private void sendBackAndClose(CategoryTransaction c) {
         Intent intent = new Intent();
         intent.putExtra("category", c);
@@ -70,7 +74,11 @@ public class CategoryCheckerActivity extends AppCompatActivity {
     }
 
 
-    class CategoryListAdapter extends ArrayAdapter<String>{
+    /**
+     * Inner private class representing an ArrayAdapter for the
+     * Category list view
+     */
+    private class CategoryListAdapter extends ArrayAdapter<String>{
         Context context;
         String[] rTitle;
         int[] rImgs;
