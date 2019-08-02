@@ -45,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
                         startActivityForResult(intent, 1);
                     } catch (NumberFormatException e){
                         // Inform the user that the amount is too high
-                        Toast.makeText(MainActivity.this, "Amount entered too high. Try lower amounts", Toast.LENGTH_SHORT);
                         System.err.println("Amount entered too high. Try lower amounts");
                         return false;
                     }
@@ -68,13 +67,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
     }
 
     @Override
     protected void onRestart() {
         super.onRestart();
-        reporter = new Reporter(configurations.getCurrentBill(), configurations.getTodayDay(), configurations.getTodayMonth());
+        reporter = new Reporter(configurations.getCurrentBill(),
+                configurations.getTodayDay(),
+                configurations.getTodayMonth());
     }
 
     @Override
@@ -93,7 +93,6 @@ public class MainActivity extends AppCompatActivity {
     private void report(){
         // Report everything to the bill
         reporter.writeAmount(this.amount, this.category);
-        reporter.close();
         // Clear the edit text
         inputAmount.getText().clear();
     }

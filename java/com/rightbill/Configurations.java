@@ -3,6 +3,7 @@ package com.rightbill;
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -152,6 +153,7 @@ public class Configurations implements Parcelable {
 
         // The currBill directory containing the current bill file
         File currBillDirectory = new File(CURR_BILL);
+
         // If not already existing create this directory
         if(currBillDirectory.mkdir()){
             // Create a new bill file inside it
@@ -191,28 +193,20 @@ public class Configurations implements Parcelable {
                 ourDay = Integer.parseInt(todayDateSplit[2]);
 
         /* The current bill is the one for this month
-        and we are still before the debit date */
-        if(presentBillName.equals(ourDate) && ourDay < debitDate){
-            // Bill Up to date --> Our operations must be appended to this bill
+        and we are still before the debit date or the one of
+        the upcoming month
+        */
+        if(presentBillName.equals(ourDate) && ourDay < debitDate
+              ||
+                (ourMonth + 1 == currMonth && ourYear == currYear)
+              ||
+                ((ourMonth == 12) && (currMonth == 1) && (ourYear + 1 == currYear))
+           ){ // Bill Up to date --> Our operations must be appended to this bill
+
             outBill = presentBill;
-        }
-        /* The current bill has this month's date but we have already
-        passed the debit date of the month */
-        else if (presentBillName.equals(ourDate) && ourDay >= debitDate){
+        } else { // This bill is not up to date
             // Bill not up to date --> To be archived and we
             // must create new bill for the upcoming month
-            moveFileToDir(presentBill.getName(), CURR_BILL, PREV_BILLS);
-            outBill = createBill();
-        }
-        /* The bill represents the expenses of the upcoming month */
-        else if( (ourMonth + 1 == currMonth && ourYear == currYear)
-                || (ourMonth == 12 && currMonth == 1 && ourYear == currYear - 1)){
-            // Bill Up to date --> Our operations must be appended to this bill
-            outBill = presentBill;
-        }
-        // This bill is not up to date
-        else{
-            // Archive it to prev_bills and create a new one
             moveFileToDir(presentBill.getName(), CURR_BILL, PREV_BILLS);
             outBill = createBill();
         }
@@ -256,6 +250,7 @@ public class Configurations implements Parcelable {
             if(file.delete())
                 System.out.println("File " + file.getName() + " was copied successfully!");
 
+            Log.e("informer", "in moveFileToDir");
             return true;
         }catch(IOException e){
             System.err.println("Failed to move " + fileName + " to " + pathDest);
@@ -284,11 +279,6 @@ public class Configurations implements Parcelable {
      */
     private void openPrevBills(){
         new File(PREV_BILLS).mkdir();
-        /*try {
-            new File(PREV_BILLS + "lol").createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
     }
 
     /**
